@@ -15,7 +15,7 @@ app.whenReady().then(() => {
     });
 
     const [mainWin, maskWin] = createWindow();
-    // mainWin.webContents.openDevTools();
+    mainWin.webContents.openDevTools();
     bindHandler(maskWin);
 
     app.on('activate', () => {

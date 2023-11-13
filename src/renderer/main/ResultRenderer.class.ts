@@ -1,4 +1,5 @@
-import { DrawingUtils, NormalizedLandmark, GestureRecognizer } from "@mediapipe/tasks-vision";
+import { DrawingUtils, GestureRecognizer } from "@mediapipe/tasks-vision";
+import type { NormalizedLandmark } from '@mediapipe/tasks-vision';
 
 export interface IArea {
     x: number;

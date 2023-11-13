@@ -3,6 +3,7 @@
 import type { GestureRecognizerResult } from '@mediapipe/tasks-vision';
 import TaskVision from './TaskVision.class';
 import ResultRenderer, { IArea } from './ResultRenderer.class';
+import outputHandler from './outputHandler';
 
 window.addEventListener('DOMContentLoaded', () => {
     const config: {
@@ -49,7 +50,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // task vision
     const resultRenderer = new ResultRenderer(canvas);
-    const taskVision = new TaskVision();
+    const taskVision = new TaskVision(video);
 
     // gui
     taskVision.addResultHandler((results: GestureRecognizerResult) => {
@@ -58,16 +59,7 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     // output
-    taskVision.addResultHandler((results: GestureRecognizerResult) => {       
-        const { gestures, landmarks } = results;
-        if (gestures.length === 0) {
-            window.electron.ipcRenderer.send('main:detect 0');
-        } else if (gestures.length === 1) {
-            window.electron.ipcRenderer.send('main:detect 1', gestures[0][0].categoryName, landmarks[0]);
-        } else {
-            window.electron.ipcRenderer.send('main:detect 2', landmarks);
-        }
-    });
+    taskVision.addResultHandler(outputHandler);
 
     // main function
     function main() {
@@ -78,7 +70,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }).then(stream => {
             if (!video) throw new Error('no video');
-            video.addEventListener('loadeddata', () => taskVision.predictWebcam(video));
+            video.addEventListener('loadeddata', () => taskVision.predictWebcam());
             video.srcObject = stream;
         }).catch(err => {
             window.electron.ipcRenderer.send('error', err);

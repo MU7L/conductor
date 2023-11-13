@@ -1,12 +1,15 @@
-import { GestureRecognizer, FilesetResolver, GestureRecognizerResult } from "@mediapipe/tasks-vision";
+import { GestureRecognizer, FilesetResolver } from "@mediapipe/tasks-vision";
+import type { GestureRecognizerResult } from "@mediapipe/tasks-vision";
 
 class TaskVision {
+    private video: HTMLVideoElement;
     private gestureRecognizer: GestureRecognizer | undefined;
     results: GestureRecognizerResult | undefined;
     private resultHandler: ((res: GestureRecognizerResult) => void)[];
     private lastVideoTime: number;
 
-    constructor() {
+    constructor(video: HTMLVideoElement) {
+        this.video = video;
         this.resultHandler = [];
         this.lastVideoTime = -1;
         this.initGestureRecognizer().catch(err => {
@@ -29,22 +32,22 @@ class TaskVision {
         console.log(this.gestureRecognizer);
     };
 
-    predictWebcam(video: HTMLVideoElement) {
+    predictWebcam() {
         // detecting the stream.
         let nowInMs = Date.now();
-        if (video.currentTime !== this.lastVideoTime) {
-            this.lastVideoTime = video.currentTime;
-            this.results = this.gestureRecognizer?.recognizeForVideo(video, nowInMs);
+        if (this.video.currentTime !== this.lastVideoTime) {
+            this.lastVideoTime = this.video.currentTime;
+            this.results = this.gestureRecognizer?.recognizeForVideo(this.video, nowInMs);
             this.handleResult();
         }
-        requestAnimationFrame(() => this.predictWebcam(video));
+        requestAnimationFrame(this.predictWebcam.bind(this));
     }
 
     addResultHandler(handler: (res: GestureRecognizerResult) => void) {
         this.resultHandler.push(handler);
     }
 
-    private handleResult() {    
+    private handleResult() {
         this.resultHandler.forEach(h => {
             if (this.results) h(this.results);
         });
