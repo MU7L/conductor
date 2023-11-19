@@ -1,80 +1,72 @@
-/// <reference types="electron-vite/node" />
+import TaskVision from "./TaskVision.class";
 
-import type { GestureRecognizerResult } from '@mediapipe/tasks-vision';
-import TaskVision from './TaskVision.class';
-import ResultRenderer, { IArea } from './ResultRenderer.class';
-import outputHandler from './outputHandler';
+const config: MediaTrackConstraints = {
+    deviceId: '',
+    facingMode: 'user'
+}
 
-window.addEventListener('DOMContentLoaded', () => {
-    const config: {
-        win: IArea;
-        area: IArea;
-    } = {
-        win: { // win size
-            x: 0,
-            y: 0,
-            width: window.innerWidth,
-            height: window.innerHeight
-        },
-        area: { // detect area size
-            x: 0,
-            y: 0,
-            width: 0,
-            height: 0,
-        }
+// dom
+const video = document.createElement('video');
+
+// task vision
+const taskVision = new TaskVision(video);
+
+// TODO: 向主进程输出
+taskVision.addResultHandler(res => window.api.sendResults(res));
+
+// 切换设备
+window.api.onSelectDevice((deviceId: string) => {
+    taskVision.stop();
+    config.deviceId = deviceId;
+    run();
+})
+
+main();
+
+async function main() {
+    const devices = await enumerateDevices();
+    if (devices.length === 0) {
+        new Notification('Error', {
+            body: '没有找到摄像头'
+        });
+        return;
     }
+    window.api.sendDevices(devices);
+    // device[0] 为默认设备
+    config.deviceId = devices[0].deviceId;
+    run();
+}
 
-    window.electron.ipcRenderer.on('main:size', (_, ratio: number, hw: number) => {
-        config.area.width = config.win.width * ratio;
-        config.area.height = config.area.width * hw;
-        config.area.x = (config.win.width - config.area.width) / 2;
-        config.area.y = (config.win.height - config.area.height) / 2;
-    });
-
-    // dom
-    const video = document.querySelector('video');
-    if (!video) {
-        window.electron.ipcRenderer.send('error', 'no video');
-        return;
-    };
-    video.width = config.win.width;
-    video.height = config.win.height;
-
-    const canvas = document.querySelector('canvas');
-    if (!canvas) {
-        window.electron.ipcRenderer.send('error', 'no canvas');
-        return;
-    };
-    canvas.width = config.win.width;
-    canvas.height = config.win.height;
-
-    // task vision
-    const resultRenderer = new ResultRenderer(canvas);
-    const taskVision = new TaskVision(video);
-
-    // gui
-    taskVision.addResultHandler((results: GestureRecognizerResult) => {
-        resultRenderer.renderLandmarks(results.landmarks);
-        resultRenderer.renderDetectArea(config.area);
-    });
-
-    // output
-    taskVision.addResultHandler(outputHandler);
-
-    // main function
-    function main() {
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                width: config.win.width,
-                height: config.win.height
-            }
-        }).then(stream => {
-            if (!video) throw new Error('no video');
-            video.addEventListener('loadeddata', () => taskVision.predictWebcam());
+// 运行
+async function run() {
+    try {
+        const stream = await getUserMedia();
+        if (stream) {
             video.srcObject = stream;
-        }).catch(err => {
-            window.electron.ipcRenderer.send('error', err);
+            video.play();
+            taskVision.start();
+        } else throw new Error('获取视频流失败');
+    } catch (error) {
+        new Notification('Error', {
+            body: String(error)
         });
     }
-    main();
-});
+}
+
+/** 获取全部摄像头 */
+async function enumerateDevices() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices
+        .filter(device => device.kind === 'videoinput')
+        .map(device => ({
+            deviceId: device.deviceId,
+            label: device.label
+        }));
+}
+
+/** 获取视频流 */
+async function getUserMedia() {
+    return await navigator.mediaDevices.getUserMedia({
+        video: config
+    });
+}
