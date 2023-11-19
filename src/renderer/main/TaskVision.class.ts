@@ -19,8 +19,7 @@ class TaskVision {
     }
 
     private async initGestureRecognizer() {
-        const vision = await FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm');
-        // const vision = await FilesetResolver.forVisionTasks('@mediapipe/tasks-vision/wasm');
+        const vision = await FilesetResolver.forVisionTasks('./wasm');
         this.gestureRecognizer = await GestureRecognizer.createFromOptions(vision, {
             numHands: 2,
             baseOptions: {
