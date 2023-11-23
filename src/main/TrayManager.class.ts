@@ -1,6 +1,8 @@
+/// <reference types="electron-vite/node" />
+
 import { app, Tray, Menu, nativeImage } from 'electron';
 import type { MenuItemConstructorOptions, MenuItem } from 'electron';
-import appIcon from '../../resources/icon.ico?asset';
+import appIcon from '../../resources/icon.png?asset';
 
 export type TTemplate = MenuItemConstructorOptions | MenuItem;
 

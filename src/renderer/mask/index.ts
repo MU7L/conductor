@@ -1,6 +1,9 @@
 import SpotLight, { IPos } from './SpotLight.class';
 
 window.addEventListener('DOMContentLoaded', () => {
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
     // dom
     const canvas = document.querySelector('canvas');
     if (!canvas) {
@@ -9,13 +12,17 @@ window.addEventListener('DOMContentLoaded', () => {
         });
         return;
     };
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = width;
+    canvas.height = height;
 
     const spotLight = new SpotLight(canvas);
     spotLight.render();
 
     window.api.onRender((posList: IPos[]) => {
-        spotLight.pos = posList;
+        spotLight.pos = posList.map(({ x, y, isActive }) => ({
+            x: x * width,
+            y: y * height,
+            isActive
+        }));
     });
 });

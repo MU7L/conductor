@@ -2,7 +2,7 @@ import { ipcMain } from 'electron';
 import type { GestureRecognizerResult } from '@mediapipe/tasks-vision';
 
 import MouseMachine from './MouseMachine.class';
-import resultParser from './resultParser';
+import resultParser, { Signal } from './resultParser';
 import type TrayManager from './TrayManager.class';
 import type { IWindowManager } from './createWindow';
 
@@ -19,11 +19,13 @@ export default function (windowManager: IWindowManager, trayManager: TrayManager
     // 选择摄像头设备
     ipcMain.on('main:devices', (_, devices: TDevice[]) => {
         if (devices.length === 0) return;
-        trayManager.devicesMenuTemplate = devices.map(({ deviceId, label }) => ({
+        trayManager.devicesMenuTemplate = devices.map(({ deviceId, label }, index) => ({
             label,
             click: () => {
                 windowManager.mainWindow.webContents.send('main:select-device', deviceId);
-            }
+            },
+            type: 'radio',
+            checked: index === 0
         }));
     });
 
@@ -34,8 +36,17 @@ export default function (windowManager: IWindowManager, trayManager: TrayManager
             windowManager.maskWindow.hide();
             return;
         }
-        const report = resultParser(results);
-        mouseMachine.handle(report);
-        windowManager.maskWindow.webContents.send('mask:render', report);
+        windowManager.maskWindow.show();
+        const {signal, posList} = resultParser(results);
+        console.log(signal, posList);
+        switch (signal) {
+            case Signal.NULL: break;
+            case Signal.ONE:
+            case Signal.LEFT:
+            case Signal.RIGHT:
+            case Signal.GRAB: mouseMachine.handle(signal, posList[0].x, posList[0].y); break;
+            case Signal.TWO: break;
+        }
+        windowManager.maskWindow.webContents.send('mask:render', posList);
     });
 }

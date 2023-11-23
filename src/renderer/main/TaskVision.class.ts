@@ -1,5 +1,4 @@
 import { GestureRecognizer, FilesetResolver } from "@mediapipe/tasks-vision";
-import { setInterval, clearInterval } from "timers";
 import type { GestureRecognizerResult } from "@mediapipe/tasks-vision";
 
 const wasmPath = './wasm';
@@ -38,11 +37,15 @@ export default class TaskVision {
     };
 
     start() {
-        this.timer = setInterval(this.predictWebcam.bind(this), 1000 / fps);
+        if (this.timer) return;
+        this.lastVideoTime = -1;
+        this.timer = window.api.setInterval(this.predictWebcam.bind(this), 1000 / fps);
     }
 
     stop() {
-        if (this.timer) clearInterval(this.timer);
+        if (!this.timer) return;
+        window.api.clearInterval(this.timer);
+        this.timer = undefined;
     }
 
     private predictWebcam() {

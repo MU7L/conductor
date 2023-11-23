@@ -6,6 +6,8 @@ declare global {
     interface Window {
         electron: ElectronAPI
         api: {
+            setInterval: (callback: () => void, delay: number) => NodeJS.Timeout,
+            clearInterval: (id: NodeJS.Timeout) => void,
             sendDevices: (devices: TDeviceInfo[]) => void;
             onSelectDevice: (callback: (deviceId: string) => void) => void;
             sendResults: (result: GestureRecognizerResult) => void;

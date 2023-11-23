@@ -10,8 +10,9 @@ const video = document.createElement('video');
 
 // task vision
 const taskVision = new TaskVision(video);
+video.addEventListener('loadeddata', () => taskVision.start());
 
-// TODO: 向主进程输出
+// 向主进程输出
 taskVision.addResultHandler(res => window.api.sendResults(res));
 
 // 切换设备
@@ -44,7 +45,6 @@ async function run() {
         if (stream) {
             video.srcObject = stream;
             video.play();
-            taskVision.start();
         } else throw new Error('获取视频流失败');
     } catch (error) {
         new Notification('Error', {
@@ -65,8 +65,8 @@ async function enumerateDevices() {
 }
 
 /** 获取视频流 */
-async function getUserMedia() {
-    return await navigator.mediaDevices.getUserMedia({
+function getUserMedia() {
+    return navigator.mediaDevices.getUserMedia({
         video: config
     });
 }

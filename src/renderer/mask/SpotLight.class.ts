@@ -6,8 +6,7 @@ export interface IPos {
 
 const spotLightConfig = {
     transparent: 0.5,
-    clipRadius: 50,
-    activeRadius: 60
+    radius: 30
 }
 
 class SpotLight {
@@ -28,43 +27,49 @@ class SpotLight {
     private drawMask() {
         if (!this.ctx) return;
         this.ctx.save();
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.fillStyle = `rgba(0, 0, 0, ${spotLightConfig.transparent})`;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.restore();
     }
 
     private drawClip() {
-        this._pos.forEach(({ x, y }) => {
-            if (!this.ctx) return;
-            this.ctx.save();
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, spotLightConfig.clipRadius, 0, 2 * Math.PI, true);
-            this.ctx.closePath();
-            this.ctx.clip();
-            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-            this.ctx.restore();
+        if (!this.ctx) return;
+        const _ctx = this.ctx;
+        this._pos.forEach(({ x, y }) => {           
+            _ctx.save();
+            _ctx.beginPath();
+            _ctx.arc(x, y, spotLightConfig.radius, 0, 2 * Math.PI, true);
+            _ctx.closePath();
+            _ctx.clip();
+            _ctx.clearRect(x - spotLightConfig.radius, y - spotLightConfig.radius, spotLightConfig.radius * 2, spotLightConfig.radius * 2);
+            _ctx.restore();
         });
     }
 
     private drawActive() {
+        if (!this.ctx) return;
+        const _ctx = this.ctx;
         this._pos
             .filter(({ isActive }) => isActive)
             .forEach(({ x, y }) => {
-                if (!this.ctx) return;
-                this.ctx.save();
-                this.ctx.beginPath();
-                this.ctx.arc(x, y, spotLightConfig.activeRadius, 0, 2 * Math.PI, true);
-                this.ctx.closePath();
-                this.ctx.fillStyle = 'white';
-                this.ctx.stroke();
-                this.ctx.restore();
+                _ctx.save();
+                _ctx.beginPath();
+                _ctx.arc(x, y, spotLightConfig.radius, 0, 2 * Math.PI, true);
+                _ctx.closePath();
+                _ctx.strokeStyle = 'white';
+                _ctx.stroke();
+                _ctx.restore();
             });
     }
 
     render() {
+        console.log('render');
+        
+        if (!this.ctx) return;
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.drawMask();
         this.drawClip();
+        this.drawActive();
         requestAnimationFrame(this.render.bind(this));
     }
 }

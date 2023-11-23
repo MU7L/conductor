@@ -1,8 +1,5 @@
 import robot from 'robotjs';
-
-export const enum Signal {
-    NULL, ONE, LEFT, RIGHT, GRAB, TWO
-}
+import { Signal } from './resultParser';
 
 type OneSignal = Exclude<Signal, Signal.NULL | Signal.TWO>;
 

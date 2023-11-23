@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { setInterval, clearInterval } from "timers";
 import type { GestureRecognizerResult } from '@mediapipe/tasks-vision';
 
 // Custom APIs for renderer
@@ -8,6 +9,12 @@ export type TDeviceInfo = {
     deviceId: string;
 }
 const api = {
+    setInterval: (callback: () => void, delay: number) => {
+        return setInterval(callback, delay);
+    },
+    clearInterval: (id: NodeJS.Timeout) => {
+        clearInterval(id);
+    },
     sendDevices: (devices: TDeviceInfo[]) => {
         ipcRenderer.send('main:devices', devices);
     },

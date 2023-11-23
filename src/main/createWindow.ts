@@ -1,5 +1,5 @@
 import { is } from "@electron-toolkit/utils";
-import { BrowserWindow, app } from "electron";
+import { BrowserWindow } from "electron";
 import { join } from "path";
 
 export interface IWindowManager {
@@ -25,7 +25,7 @@ function createMainWindow() {
     });
 
     if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        win.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/detector');
+        win.loadURL(process.env['ELECTRON_RENDERER_URL']);
     } else {
         win.loadFile(join(__dirname, '../renderer/index.html'));
     }
@@ -51,18 +51,10 @@ function createMaskWindow() {
         }
     });
 
-    win.on('ready-to-show', () => {
-        win.show();
-    });
-    win.on('close', () => {
-        if (process.platform !== 'darwin') {
-            app.quit();
-        }
-    });
     win.setIgnoreMouseEvents(true, { forward: true });
 
     if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
-        win.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/mask');
+        win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/mask.html`);
     } else {
         win.loadFile(join(__dirname, '../renderer/mask.html'));
     }

@@ -8,7 +8,15 @@ export default defineConfig({
     })]
   },
   preload: {
-    plugins: [externalizeDepsPlugin()]
+    plugins: [externalizeDepsPlugin()],
+    build: {
+      rollupOptions: {
+        input: {
+          main: resolve(__dirname, 'src/preload/main.ts'),
+          mask: resolve(__dirname, 'src/preload/mask.ts'),
+        }
+      }
+    }
   },
   renderer: {
     build: {

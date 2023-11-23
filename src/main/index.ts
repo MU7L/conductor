@@ -17,6 +17,7 @@ app.whenReady().then(() => {
 
     let windowManager = createWindow();
     windowManager.mainWindow.webContents.openDevTools();
+    windowManager.maskWindow.webContents.openDevTools();
     const trayManager = new TrayManager();
     bindHandler(windowManager, trayManager);
 
