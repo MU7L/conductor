@@ -1,8 +1,17 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
-const api = {}
+export type TPos = {
+    x: number;
+    y: number;
+    isActive: boolean;
+}
+const api = {
+    onRender: (callback: (posList: TPos[]) => void) => {
+        ipcRenderer.on('mask:render', (_, posList: TPos[]) => callback(posList));
+    }
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

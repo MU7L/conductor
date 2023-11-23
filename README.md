@@ -119,6 +119,16 @@ conductor
 6. 项目构建打包时 Robot.js 出错
 
    由于 Node.js 在使用 C/C++ 扩展时只能构建成为 `CommonJS` 的模块，不能用于 Vite，同时无法用于动态加载的场景，此处只能用 `external` 选项排除 `C/C++` 模块构建。参见：[C/C++ Addons | Electron⚡️Vite (electron-vite.github.io)](https://electron-vite.github.io/guide/cpp-addons.html)。更换框架后未出现改问题。
+   
+7. 识别窗口最小化或不可见时识别模块不工作
+
+   `requestAnimationFrame` 是一个用于动画循环的API，它会在浏览器刷新前调用指定的回调函数，以便更新动画。根据浏览器的规范，当浏览器窗口变为不可见时，动画应该被暂停，因此 `requestAnimationFrame` 也不会执行回调。
+
+   在浏览器不可见时执行动画可能会导致性能问题和浪费资源，因此暂停动画是一个好的实践。
+
+   同时注意到，`setInterval` 等延时函数在 Electron 中触发时间有误。参考：[electron 窗口隐藏后 setTimeout setInterval 等延时函数出现执行间隔与定义好的延时时间出现巨大差距的问题-CSDN博客](https://blog.csdn.net/qq_15801963/article/details/115871793)
+
+   综上，最终选择 timers 库实现延时回调。
 
 ## 版本更新
 
@@ -131,8 +141,13 @@ conductor
 ### 2023/11/07
 
 - 项目由 [Electron⚡️Vite (electron-vite.github.io)](https://electron-vite.github.io) 框架迁移到 [electron-vite](https://cn.electron-vite.org/) 
+
 - 实现多进程，分别处理检测识别和结果反馈
+
 - 完成大部分重构，部分实现面向对象开发
-- 鼠标漂移问题待解决
-- 其余动作待开发
+
+  问题：
+
+  1. 鼠标漂移
+  2. 检测出背景中的不希望被检测到的手
 

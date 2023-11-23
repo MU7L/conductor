@@ -1,7 +1,8 @@
 import { app, BrowserWindow } from 'electron';
 import { electronApp, optimizer } from '@electron-toolkit/utils';
-import createWindow from './window';
-import bindHandler from './handler';
+import TrayManager from './TrayManager.class';
+import createWindow from './createWindow';
+import bindHandler from './bindHandler';
 
 app.whenReady().then(() => {
     // Set app user model id for windows
@@ -14,14 +15,18 @@ app.whenReady().then(() => {
         optimizer.watchWindowShortcuts(window);
     });
 
-    const [mainWin, maskWin] = createWindow();
-    mainWin.webContents.openDevTools();
-    bindHandler(maskWin);
+    let windowManager = createWindow();
+    windowManager.mainWindow.webContents.openDevTools();
+    windowManager.maskWindow.webContents.openDevTools();
+    const trayManager = new TrayManager();
+    bindHandler(windowManager, trayManager);
 
     app.on('activate', () => {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
-        if (BrowserWindow.getAllWindows().length === 0) createWindow();
+        if (BrowserWindow.getAllWindows().length === 0) {
+            windowManager = createWindow();
+        }
     });
 })
 
@@ -32,7 +37,7 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
-})
+});
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.

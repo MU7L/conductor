@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        #app {
+            position: relative;
+        }
+
+        canvas,
+        video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <video autoplay width="400" height="300"></video>
+        <canvas width="400" height="300"></canvas>
+    </div>
+    <script type="module" src="monitor/index.ts"></script>
+</body>
+
+</html>
